@@ -1,0 +1,16 @@
+click==7.1.2
+joblib==0.14.1
+lxml==4.5.0
+nltk==3.5
+numpy==1.18.3
+pandas==1.0.3
+python-dateutil==2.8.1
+pytz==2020.1
+regex==2020.4.4
+scikit-learn==0.22.2.post1
+scipy==1.4.1
+selenium==3.141.0
+six==1.14.0
+sklearn==0.0
+tqdm==4.45.0
+urllib3==1.25.9
