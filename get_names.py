@@ -1,10 +1,15 @@
-# este script busca devolver el nombre de una empresa dado el símbolo ticker.
+# este script busca crear un archivo json que asocia a cada símbolo ticker la empresa correspondiente
 import pandas
 import json
+import os
 
-nyse = pandas.read_csv("D:\\Coding\\PyCharm Workspace\\ProyectoBigData\\datos\\NASDAQ.txt", sep="\t")
-nasdaq = pandas.read_csv("D:\\Coding\\PyCharm Workspace\\ProyectoBigData\\datos\\NYSE.txt", sep="\t")
+# guardamos la ruta para obtener los datos (y luego guardar el resultado)
+# este método es independiente de la ubicación del repositorio y del sistema operativo
+path = os.path.join(os.path.dirname(__file__), "datos")
+nyse = pandas.read_csv(os.path.join(path, "NASDAQ.txt"), sep="\t")
+nasdaq = pandas.read_csv(os.path.join(path, "NYSE.txt"), sep="\t")
 
+# añadimos los datos a un diccionario, evitando valores repetidos
 nyseSymbol = list(nyse["Symbol"])
 nyseDescription = list(nyse["Description"])
 nasdaqSymbol = list(nasdaq["Symbol"])
@@ -22,5 +27,6 @@ for i in range(0, len(nasdaqDescription)):
     if nasdaqDescription[i] not in translation_dictDescription:
         translation_dict.setdefault(nasdaqSymbol[i], nasdaqDescription[i])
 
-with open("D:\\Coding\\PyCharm Workspace\\ProyectoBigData\\datos\\tickers.json", "w") as fp:
+# guardamos el diccionario como json
+with open(os.path.join(path, "tickers.json"), "w") as fp:
     json.dump(translation_dict, fp)
