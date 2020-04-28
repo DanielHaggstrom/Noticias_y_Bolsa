@@ -1,15 +1,21 @@
-from get_names import dicNombres
+import json
+import os
 from selenium import webdriver
 import selenium
 import time
 import pickle
 import pandas as pd
-startTime = time.time()
 
+
+startTime = time.time()
+dict_path = os.path.join(os.path.dirname(__file__), "datos", "tickers.json")
+dicNombres = json.load(dict_path)
 loginUsername = 'arru.aizpu@gmail.com'
 loginContraseña = 'usvefñuouyacnrpuybacpl'
 empresasTicker = list(dicNombres.keys())
 empresas = list(dicNombres.values())
+
+noticias_path = os.path.join(os.path.dirname(__file__), "datos", "noticias")
 
 url = 'https://www.ft.com/'
 driver = webdriver.Chrome()
@@ -180,7 +186,7 @@ def extraerNoticias(loginUsername, loginContraseña):
                 'Titular': listaTitular, 'Subtitular': listaSubtitular, 'Texto': listaTextoCompleto}
         df = pd.DataFrame(
             data, columns=['Ticker', 'Nombre_Completo', 'Date_Time', 'Titular', 'Subtitular', 'Texto'])
-        df.to_csv(empresa + '.csv', sep=';')
+        df.to_csv(os.path.join(noticias_path, empresa + '.csv'), sep=';')
         contador += 1
     return print('Fin')
 
