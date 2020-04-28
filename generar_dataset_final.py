@@ -1,13 +1,14 @@
 # este script unificará los datos de varias empresas para el prototipo 2
+# debe producir un archivo csv para cada empresa, con fechas, crecimeintos y puntuaciones de noticias
 import os
 import datetime
 from statistics import mean
 import pandas
-# AHORA MISMO, ESTÁ EN MODO DE CLASSIFICATION
+
+# AHORA MISMO ESTÁ EN MODO DE CLASSIFICATION
 
 # guardaremos los datos de empresas separados en dataframes diferentes, en un diccionario
 data_dict = {}
-
 
 # definimos función para calcular el crecimiento
 def get_growth(open_price, close_price):
@@ -37,17 +38,18 @@ def generate_date_list(date1):
         aux.append(next_day)
     return [date.strftime("%Y-%m-%d") for date in aux]
 
+# creamos las rutas adecuadas para obtener datos y guardarlos
+path_bolsa = os.path.join(os.path.dirname(__file__), "datos", "bolsa")
+path_noticias = os.path.join(os.path.dirname(__file__), "datos", "noticias - score")
+path_final = os.path.join(os.path.dirname(__file__), "datos", "aprendizaje")
 
-path1 = "D:\\Coding\\PyCharm Workspace\\ProyectoBigData\\datos\\prototipo 2"
-path2 = "D:\\Coding\\PyCharm Workspace\\ProyectoBigData\\datos\\NOTICIAS CSV - LIMPIAS"
-for file in os.listdir(path1):
-    # primero buscamos entre los datos de noticias si tenemos para esta empresa
-    if file not in os.listdir(path2):
+for file in os.listdir(path_bolsa):
+    # primero buscamos entre los datos de noticias, para comprobar que podemos seguir
+    if file not in os.listdir(path_noticias):
         continue
     # adquirimos el dataframe con scores de noticias, y lo ajustamos a nuestras necesidades
     news_data = pandas.read_csv(path2 + "\\" + file)
     news_data.drop(["Unnamed: 0"], axis=1, inplace=True)
-    # estamos asumiendo que los únicos archivos en el directorio son csv de datos de empresas.
     raw_data = pandas.read_csv(path1 + "\\" + file)
     # limpiamos un poco
     raw_data["Date"] = raw_data.apply(lambda row: datetime.datetime.strptime(row["Date"], "%b %d, %Y")
@@ -80,5 +82,7 @@ for file in os.listdir(path1):
                        ignore_index=True)
     # guardamos los datos en el diccionario
     data_dict[file[:-4]] = df
+
+# finalmente, guardamos los dataframes a csv
 for key, value in data_dict.items():
-    value.to_csv(path1 + "\\datos_aprendizaje\\" + key + ".csv", index=False)
+    value.to_csv(os.path.join(path_final, key, ".csv"), index=False)
