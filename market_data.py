@@ -1,6 +1,7 @@
 import requests
 import lxml.html as lh
 import pandas as pd
+import os
 
 url = 'https://www.slickcharts.com/sp500'
 page = requests.get(url)
@@ -93,6 +94,6 @@ for t in tickers:
 
     Dict = {title: column for (title, column) in col}
     df = pd.DataFrame(Dict)
-    path = 'D:\\Coding\\PyCharm Workspace\\ProyectoBigData\\datos\\prototipo 2\\' + tickers[cont] + '.csv'
+    path = os.path.join(os.path.dirname(__file__), "datos", "bolsa", tickers[cont] + ".csv")
     df.to_csv(path, index=False)
     cont = cont + 1
