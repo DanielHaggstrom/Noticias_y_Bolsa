@@ -92,7 +92,8 @@ for file in os.listdir(path_bolsa):
 
 # existen nulls, imputaremos con la media
 dataset_final.fillna(dataset_final.mean(), inplace=True)
+dataset_final.sort_index(inplace=True)
 
 # finalmente, guardamos el dataframes a csv
-dataset_final.to_csv(os.path.join(path_final, "dataset.csv"), index=False)
+dataset_final.to_csv(os.path.join(path_final, "dataset.csv"), index=True, index_label="Date")
 print("Terminado")
