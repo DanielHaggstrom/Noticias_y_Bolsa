@@ -1,14 +1,12 @@
 # este script unificará los datos de varias empresas para el prototipo 2
-# debe producir un archivo csv para cada empresa, con fechas, crecimeintos y puntuaciones de noticias
+# debe producir un archivo csv con columnas para empresa, con crecimeintos y puntuaciones de noticias
 import os
 import datetime
 from statistics import mean
 import pandas
+from numpy import nan
 
-# AHORA MISMO ESTÁ EN MODO DE CLASSIFICATION
-
-# guardaremos los datos de empresas separados en dataframes diferentes, en un diccionario
-data_dict = {}
+# AHORA MISMO ESTÁ EN MODO DE REGRESIÓN
 
 # definimos función para calcular el crecimiento
 def get_growth(open_price, close_price):
@@ -43,46 +41,58 @@ path_bolsa = os.path.join(os.path.dirname(__file__), "datos", "bolsa")
 path_noticias = os.path.join(os.path.dirname(__file__), "datos", "noticias - score")
 path_final = os.path.join(os.path.dirname(__file__), "datos", "aprendizaje")
 
+# guardaremos todos los datos en un dataframe
+dataset_final = pandas.DataFrame()
+
 for file in os.listdir(path_bolsa):
     # primero buscamos entre los datos de noticias, para comprobar que podemos seguir
     if file not in os.listdir(path_noticias):
         continue
+    ticker = file[:-4]
     # adquirimos el dataframe con scores de noticias, y lo ajustamos a nuestras necesidades
-    news_data = pandas.read_csv(path2 + "\\" + file)
+    news_data = pandas.read_csv(path_noticias + "\\" + file)
     news_data.drop(["Unnamed: 0"], axis=1, inplace=True)
-    raw_data = pandas.read_csv(path1 + "\\" + file)
+    raw_data = pandas.read_csv(path_bolsa + "\\" + file)
     # limpiamos un poco
     raw_data["Date"] = raw_data.apply(lambda row: datetime.datetime.strptime(row["Date"], "%b %d, %Y")
                                       .strftime("%Y-%m-%d"), axis=1)
     raw_data.set_index("Date", inplace=True)
     raw_data.drop(["High", "Low", "Adj Close**", "Volume"], axis=1, inplace=True)
     raw_data.sort_index(inplace=True)
-    # creamos un dataframe vacío, donde guardaremos los datos de la empresa
-    df = pandas.DataFrame(columns=["Date", "Growth", "Score"])
+    # creamos un dataframe vacío, donde guardaremos los datos de la empresa particular
+    df = pandas.DataFrame(columns=["Date"])
     # iteramos sobre las filas del dataframe raw_data
     for index, row in raw_data.iterrows():
         # buscamos las filas del dataframe de scores que se encuentren en la semana correspondiente a esta fila
         date_list = generate_date_list(index)
         score_list = list(news_data.loc[news_data["Date_Time"].isin(date_list)]["Score"])
         if len(score_list) == 0:
-            score = 0
+            score = nan
         else:
             score = mean(score_list)
+            """
             if score > 0:
                 score = 1
             else:
                 score = -1
+            """
         # adquirimos los datos
         growth = get_growth(row["Open"], row["Close*"])
+        """
         if growth > 0:
             growth = 1
         else:
             growth = -1
-        df = df.append({"Date": index, "Growth": growth, "Score": score},
+        """
+        df = df.append({"Date": index, ticker + "-growth": growth, ticker + "-score": score},
                        ignore_index=True)
-    # guardamos los datos en el diccionario
-    data_dict[file[:-4]] = df
+    # guardamos los datos en el dataset final
+    df.set_index("Date", inplace=True)
+    dataset_final = pandas.concat((dataset_final, df), axis=1)
 
-# finalmente, guardamos los dataframes a csv
-for key, value in data_dict.items():
-    value.to_csv(os.path.join(path_final, key, ".csv"), index=False)
+# existen nulls, imputaremos con la media
+dataset_final.fillna(dataset_final.mean(), inplace=True)
+
+# finalmente, guardamos el dataframes a csv
+dataset_final.to_csv(os.path.join(path_final, "dataset.csv"), index=False)
+print("Terminado")
