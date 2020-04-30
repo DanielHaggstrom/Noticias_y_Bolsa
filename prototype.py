@@ -9,6 +9,7 @@ from sklearn.ensemble import RandomForestRegressor
 from sklearn.metrics import confusion_matrix
 from sklearn.metrics import accuracy_score
 from sklearn.ensemble import RandomForestClassifier
+from sklearn import preprocessing
 from sklearn.neural_network import MLPRegressor
 
 
@@ -45,7 +46,7 @@ testing_data = data.loc["2019-01-01":"2020-12-31"]
 
 # declaramos los parámetros que vamos a usar
 horizon = 1
-window = 10
+window = 15
 step = 1
 
 # obtenemos las columans target y no_target
@@ -73,8 +74,8 @@ x_test = data_train_shifted[no_targets]
 y_test = data_train_shifted[targets]
 
 # entrenamos y validamos el modelo
-reg = MLPRegressor(hidden_layer_sizes=(170, 170, 170), solver="lbfgs", max_iter=100000000)
-model = reg.fit(x_train, y_train)
-r2 = reg.score(reg.predict(x_test), y_test)
+reg = MLPRegressor(hidden_layer_sizes=(255, 255, 255, 255, 255, 255, 255), max_iter=100000000)
+model = reg.fit(preprocessing.scale(x_train), preprocessing.scale(y_train))
+r2 = reg.score(reg.predict(preprocessing.scale(x_test)), preprocessing.scale(y_test))
 print(r2)
 
