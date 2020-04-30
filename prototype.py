@@ -40,12 +40,12 @@ data.set_index("Date", inplace=True)
 # TODO normalizar datos
 
 # separamos en test y training
-training_data = data.loc["2018-07-09":"2019-12-31"]
-testing_data = data.loc["2020-01-01":"2020-12-31"]
+training_data = data.loc["2012-01-01":"2018-12-31"]
+testing_data = data.loc["2019-01-01":"2020-12-31"]
 
 # declaramos los parámetros que vamos a usar
 horizon = 1
-window = 4
+window = 10
 step = 1
 
 # obtenemos las columans target y no_target
@@ -73,7 +73,7 @@ x_test = data_train_shifted[no_targets]
 y_test = data_train_shifted[targets]
 
 # entrenamos y validamos el modelo
-reg = MLPRegressor(hidden_layer_sizes=(68,), solver="lbfgs", max_iter=10000)
+reg = MLPRegressor(hidden_layer_sizes=(170, 170, 170), solver="lbfgs", max_iter=100000000)
 model = reg.fit(x_train, y_train)
 r2 = reg.score(reg.predict(x_test), y_test)
 print(r2)
