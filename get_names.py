@@ -1,11 +1,12 @@
 # este script busca crear un archivo json que asocia a cada símbolo ticker la empresa correspondiente
-import pandas
+import config
 import json
 import os
+import pandas
 
 # guardamos la ruta para obtener los datos (y luego guardar el resultado)
 # este método es independiente de la ubicación del repositorio y del sistema operativo
-path = os.path.join(os.path.dirname(__file__), "datos")
+path = config.path_datos
 nyse = pandas.read_csv(os.path.join(path, "NASDAQ.txt"), sep="\t")
 nasdaq = pandas.read_csv(os.path.join(path, "NYSE.txt"), sep="\t")
 
