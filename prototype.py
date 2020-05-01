@@ -52,7 +52,7 @@ step = 1
 # obtenemos las columans target y no_target
 targets = []
 for col in data.columns:
-    if "score" in col:
+    if "growth" in col:
         targets.append(col)
 no_targets = list(set(data.columns).difference(targets))
 
@@ -63,7 +63,7 @@ data_test_shifted, _ = make_time_steps(testing_data, horizon, window, step, targ
 # volvemos a obtener target y no target para el nuevo dataset, que tiene un formato de nombres un poco diferente
 targets = []
 for col in data_train_shifted.columns:
-    if "score" in col:
+    if "growth" in col:
         targets.append(col)
 no_targets = list(set(data_train_shifted.columns).difference(targets))
 
