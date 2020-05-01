@@ -51,16 +51,15 @@ for file in os.listdir(config.path_datos_bolsa):
     news_data.drop(["Unnamed: 0"], axis=1, inplace=True)
     raw_data = pandas.read_csv(os.path.join(config.path_datos_bolsa, file))
     # limpiamos un poco
-    raw_data["Date"] = raw_data.apply(lambda row: datetime.datetime.strptime(row["Date"], "%b %d, %Y")
-                                      .strftime("%Y-%m-%d"), axis=1)
     raw_data.set_index("Date", inplace=True)
-    raw_data.drop(["High", "Low", "Adj Close**", "Volume"], axis=1, inplace=True)
+    raw_data.drop(["High", "Low", "Adj Close", "Volume"], axis=1, inplace=True)
     raw_data.sort_index(inplace=True)
     # creamos un dataframe vacío, donde guardaremos los datos de la empresa particular
     df = pandas.DataFrame(columns=["Date"])
     # iteramos sobre las filas del dataframe raw_data
     for index, row in raw_data.iterrows():
         # buscamos las filas del dataframe de scores que se encuentren en la semana correspondiente a esta fila
+        # todo asegurarse que no hay problemas con tickers con guiones
         date_list = generate_date_list(index)
         score_list = list(news_data.loc[news_data["Date_Time"].isin(date_list)]["Score"])
         if len(score_list) == 0:
@@ -74,7 +73,7 @@ for file in os.listdir(config.path_datos_bolsa):
                 score = -1
             """
         # adquirimos los datos
-        growth = get_growth(row["Open"], row["Close*"])
+        growth = get_growth(row["Open"], row["Close"])
         """
         if growth > 0:
             growth = 1
