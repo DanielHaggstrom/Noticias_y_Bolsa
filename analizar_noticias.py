@@ -1,20 +1,16 @@
 # nuestro objetivo es guardar copias de los datos de noticias, pero que contengan el score del análisis del sentimeinto
 # en vez del contenido de la noticia
-import pandas
+import config
 import os
+import pandas
 from nltk.sentiment.vader import SentimentIntensityAnalyzer as SIA
 
 sia = SIA()
 
-# creamos la ruta a "noticias" de forma independiente de la ubicación del repo, y del sistema operativo
-news_path = os.path.join(os.path.dirname(__file__), "datos", "noticias")
-# también hacemos lo mismo para la ruta donde guardaremos los datos completos
-score_path = os.path.join(os.path.dirname(__file__), "datos", "noticias - score")
-
 # iteramos sobre la carpeta "noticias", donde se encuentran los dataframes csv que contienen las fechas y artículos
 # cada archivo es una empresa
-for file in os.listdir(news_path):
-    df = pandas.read_csv(os.path.join(news_path, file), delimiter=";")
+for file in os.listdir(config.path_datos_noticias):
+    df = pandas.read_csv(os.path.join(config.path_datos_noticias, file), delimiter=";")
     ticker = df["Ticker"].iloc[0]
     df["Date_Time"] = df["Date_Time"].str[:10] # eliminamos la hora, dejando sólo la fecha
     df["Score"] = 0
@@ -34,4 +30,4 @@ for file in os.listdir(news_path):
         score = sia.polarity_scores(text=articulo)["compound"]
         df.loc[index, "Score"] = score
     # guardamos el resultado
-    df[["Date_Time", "Score"]].copy().to_csv(os.path.join(news_path, ticker + ".csv"))
+    df[["Date_Time", "Score"]].copy().to_csv(os.path.join(config.path_datos_noticias_score, ticker + ".csv"))

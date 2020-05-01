@@ -1,5 +1,6 @@
 # este script unificará los datos de varias empresas para el prototipo 2
 # debe producir un archivo csv con columnas para empresa, con crecimeintos y puntuaciones de noticias
+import config
 import os
 import datetime
 from statistics import mean
@@ -37,22 +38,18 @@ def generate_date_list(date1):
     return [date.strftime("%Y-%m-%d") for date in aux]
 
 # creamos las rutas adecuadas para obtener datos y guardarlos
-path_bolsa = os.path.join(os.path.dirname(__file__), "datos", "bolsa")
-path_noticias = os.path.join(os.path.dirname(__file__), "datos", "noticias - score")
-path_final = os.path.join(os.path.dirname(__file__), "datos", "aprendizaje")
-
 # guardaremos todos los datos en un dataframe
 dataset_final = pandas.DataFrame()
 
-for file in os.listdir(path_bolsa):
+for file in os.listdir(config.path_datos_bolsa):
     # primero buscamos entre los datos de noticias, para comprobar que podemos seguir
-    if file not in os.listdir(path_noticias):
+    if file not in os.listdir(config.path_datos_noticias_score):
         continue
     ticker = file[:-4]
     # adquirimos el dataframe con scores de noticias, y lo ajustamos a nuestras necesidades
-    news_data = pandas.read_csv(path_noticias + "\\" + file)
+    news_data = pandas.read_csv(os.path.join(config.path_datos_noticias,file))
     news_data.drop(["Unnamed: 0"], axis=1, inplace=True)
-    raw_data = pandas.read_csv(path_bolsa + "\\" + file)
+    raw_data = pandas.read_csv(os.path.join(config.path_datos_bolsa, file))
     # limpiamos un poco
     raw_data.set_index("Date", inplace=True)
     raw_data.drop(["High", "Low", "Adj Close", "Volume"], axis=1, inplace=True)
@@ -94,5 +91,5 @@ dataset_final.fillna(dataset_final.mean(), inplace=True)
 dataset_final.sort_index(inplace=True)
 
 # finalmente, guardamos el dataframes a csv
-dataset_final.to_csv(os.path.join(path_final, "dataset.csv"), index=True, index_label="Date")
+dataset_final.to_csv(os.path.join(config.path_datos_aprendizaje, "dataset.csv"), index=True, index_label="Date")
 print("Terminado")

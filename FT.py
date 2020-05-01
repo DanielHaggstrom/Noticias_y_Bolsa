@@ -1,22 +1,22 @@
 # Este script extrae las noticias de bolsa del Financial Times de cada empresa en la que estamos interesados
 import json
+import config
 import os
 from selenium import webdriver
-import selenium
 import time
 import pickle
 import pandas as pd
 
 
 startTime = time.time()
-dict_path = os.path.join(os.path.dirname(__file__), "datos", "tickers.json")
-dicNombres = json.load(dict_path)
+dict_path = os.path.join(config.path_datos, "tickers.json")
+dicNombres = json.load(os.path.join(config.path_datos, "tickers.json"))
 loginUsername = 'arru.aizpu@gmail.com'
 loginContraseña = 'usvefñuouyacnrpuybacpl'
 empresasTicker = list(dicNombres.keys())
 empresas = list(dicNombres.values())
 
-noticias_path = os.path.join(os.path.dirname(__file__), "datos", "noticias")
+noticias_path = config.path_datos_noticias
 
 # Este es el código necesario para poder logearnos en el FT
 url = 'https://www.ft.com/'
