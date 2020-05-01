@@ -7,8 +7,8 @@ import pandas
 # guardamos la ruta para obtener los datos (y luego guardar el resultado)
 # este método es independiente de la ubicación del repositorio y del sistema operativo
 path = config.path_datos
-nyse = pandas.read_csv(os.path.join(path, "NASDAQ.txt"), sep="\t")
-nasdaq = pandas.read_csv(os.path.join(path, "NYSE.txt"), sep="\t")
+nyse = pandas.read_csv(os.path.join(path, "NASDAQ.txt"))
+nasdaq = pandas.read_csv(os.path.join(path, "NYSE.txt"))
 
 # añadimos los datos a un diccionario, evitando valores repetidos
 nyseSymbol = list(nyse["Symbol"])
