@@ -4,10 +4,10 @@ Repositorio para las asignaturas Proyecto Big Data II y III
 El objetivo es predecir los valores de bolsa (índice S&P 500) partiendo del análisis de sentimiento en las noticias. Trabajamos con datos de granularidad semanal. Obtenemos los valores de bolsa de Yahoo Finance, y los datos de prensa de Finantial Times.
 
 ## Tareas por hacer
-[] Añadir más datos.
-[] Probar varios algoritmos para los modelos de series temporales.
-[] Probar varios parámetros.
-[] Mejorar el análisis de sentimiento.
+- [ ] Añadir más datos.
+- [ ] Probar varios algoritmos para los modelos de series temporales.
+- [ ] Probar varios parámetros.
+- [ ] Mejorar el análisis de sentimiento.
 
 ## Dependencias
 Nuestro proyecto emplea las librerías indicadas en `requirements.txt`, notablemente `numpy`, `pandas`, `nltk`, `selenium` y `sklearn`. Estas librerías pueden instalarse mediante `pip install -r requirements.txt`, pero es necesario activar el virtual environment antes.
