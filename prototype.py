@@ -11,6 +11,7 @@ from sklearn.metrics import accuracy_score
 from sklearn.ensemble import RandomForestClassifier
 from sklearn import preprocessing
 from sklearn.neural_network import MLPRegressor
+from sklearn.multioutput import MultiOutputRegressor
 
 
 # AHORA ESTÁ EN MODO REGRESIÓN
@@ -38,7 +39,8 @@ path = os.path.join(os.path.dirname(__file__), "datos", "aprendizaje", "dataset.
 data = pandas.read_csv(path)
 data.set_index("Date", inplace=True)
 
-# TODO normalizar datos
+# normalizamos los datos
+data = (data-data.mean())/data.std()
 
 # separamos en test y training
 training_data = data.loc["2012-01-01":"2018-12-31"]
@@ -75,7 +77,13 @@ y_test = data_train_shifted[targets]
 
 # entrenamos y validamos el modelo
 reg = MLPRegressor(hidden_layer_sizes=(255, 255, 255, 255, 255, 255, 255), max_iter=100000000)
-model = reg.fit(preprocessing.scale(x_train), preprocessing.scale(y_train))
-r2 = reg.score(reg.predict(preprocessing.scale(x_test)), preprocessing.scale(y_test))
+reg.fit(x_train, y_train)
+r2 = reg.score(reg.predict(x_test), y_test)
+print("MLP")
 print(r2)
 
+svr = MultiOutputRegressor(SVR())
+svr.fit(x_train, y_train)
+r2 = svr.score(svr.predict(x_test), y_test)
+print("SVR")
+print(r2)
