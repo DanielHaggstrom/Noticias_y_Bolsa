@@ -15,8 +15,6 @@ Nuestro proyecto emplea las librerías indicadas en `requirements.txt`, notablem
 ## Información general
 **get_names** construye, a partir de `datos/NASDAQ.txt` y `datos/NYSE.txt` un diccionario que asocia símbolos ticker con nombres de compañía. Este diccionario es guardado como un archivo json en `datos/tickers.json`.
 
-**ExtraccionTexto** ??
-
 **FT** extrae noticias del periódico *Finantial Times* relacionadas con las empresas del S&P 500, y genera una serie de archivos CSV con la fecha y el contenido de la noticia, agrupados por empresa: `datos/noticias/<nombre de empresa>.csv`.
 
 **analizar_noticias** copia los dataframes generados por `FT.py`, pero sustituyendo el contenido de las noticias por la puntuación del análisis de sentimiento. Los resultados se guardan en `datos/noticias - score/<ticker de empresa>.csv`.
