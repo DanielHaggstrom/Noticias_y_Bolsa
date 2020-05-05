@@ -30,6 +30,9 @@ def make_time_steps(data, h, w, s, targets):
         new_target = '{}+{}'.format(target, h)
         new_targets[new_target] = data[target].shift(-h)
     new_data.dropna(inplace=True)
+    new_targets.dropna(inplace=True)
+    new_targets.drop(new_targets.head(len(window_values)).index, inplace=True)
+    new_data.drop(new_data.tail(1).index, inplace=True)
     print("Filas restantes: " + str(len(new_data)))
     return new_data, new_targets
 
@@ -48,7 +51,7 @@ testing_data = data.loc["2019-01-01":"2020-12-31"]
 
 # declaramos los parámetros que vamos a usar
 horizon = 1
-window = 15
+window = 20
 step = 1
 
 # obtenemos las columans target y no_target
@@ -59,31 +62,18 @@ for col in data.columns:
 no_targets = list(set(data.columns).difference(targets))
 
 # obtenemos los time_steps
-data_train_shifted, target = make_time_steps(training_data, horizon, window, step, targets)
-data_test_shifted, _ = make_time_steps(testing_data, horizon, window, step, targets)
-
-# volvemos a obtener target y no target para el nuevo dataset, que tiene un formato de nombres un poco diferente
-targets = []
-for col in data_train_shifted.columns:
-    if "growth" in col:
-        targets.append(col)
-no_targets = list(set(data_train_shifted.columns).difference(targets))
-
-# creamos los conjuntos de entrenamiento y testeo, separados en targets y no targets
-x_train = data_train_shifted[no_targets]
-y_train = data_train_shifted[targets]
-x_test = data_train_shifted[no_targets]
-y_test = data_train_shifted[targets]
+x_train, y_train = make_time_steps(training_data, horizon, window, step, targets)
+x_test, y_test = make_time_steps(testing_data, horizon, window, step, targets)
 
 # entrenamos y validamos el modelo
-reg = MLPRegressor(hidden_layer_sizes=(255, 255, 255, 255, 255, 255, 255), max_iter=100000000)
+reg = MLPRegressor(hidden_layer_sizes=(800, 800, 800, 800), max_iter=100000000)
 reg.fit(x_train, y_train)
-r2 = reg.score(reg.predict(x_test), y_test)
+r2 = reg.score(x_test, y_test)
 print("MLP")
 print(r2)
 
 svr = MultiOutputRegressor(SVR())
 svr.fit(x_train, y_train)
-r2 = svr.score(svr.predict(x_test), y_test)
+r2 = svr.score(x_test, y_test)
 print("SVR")
 print(r2)
