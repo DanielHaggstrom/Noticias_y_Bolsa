@@ -4,6 +4,7 @@ import config
 import os
 import datetime
 from statistics import mean
+from statistics import stdev
 import pandas
 from numpy import nan
 
@@ -64,10 +65,15 @@ for file in os.listdir(config.path_datos_bolsa):
         # todo asegurarse que no hay problemas con tickers con guiones
         date_list = generate_date_list(index)
         score_list = list(news_data.loc[news_data["Date_Time"].isin(date_list)]["Score"])
+        score_num = len(score_list)
+        std = nan
         if len(score_list) == 0:
             score = nan
         else:
             score = mean(score_list)
+            if len(score_list) > 1:
+                std = stdev(score_list)
+
             """
             if score > 0:
                 score = 1
@@ -83,8 +89,8 @@ for file in os.listdir(config.path_datos_bolsa):
         else:
             growth = -1
         """
-        df = df.append({"Date": index, ticker + "-growth": growth, ticker + "-score": score},
-                       ignore_index=True)
+        df = df.append({"Date": index, ticker + "-growth": growth, ticker + "-score": score, ticker + "-num": score_num,
+                        ticker + "-std": std}, ignore_index=True)
     # guardamos los datos en el dataset final
     df.set_index("Date", inplace=True)
     dataset_final = pandas.concat((dataset_final, df), axis=1)
