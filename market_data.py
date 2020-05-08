@@ -74,6 +74,7 @@ for t in tickers:
         day_of_week = datetime.datetime.strptime(date, "%Y-%m-%d").weekday()
         days_to_next_sunday = 6 - day_of_week
         next_sunday = datetime.datetime.strptime(date, "%Y-%m-%d") + datetime.timedelta(days=days_to_next_sunday)
+        input(next_sunday)
         period1 = int(next_sunday.timestamp())
         # volvemos a intentar el archivo, esta vez con la fecha modificada
         url = "https://query1.finance.yahoo.com/v7/finance/download/" + t + \

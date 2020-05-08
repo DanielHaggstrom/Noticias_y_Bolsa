@@ -4,7 +4,8 @@ import os
 import pandas
 import datetime
 
-df = pandas.read_csv(os.path.join(config.path_datos_aprendizaje, "dataset.csv"), index_col="Date")
+df = pandas.read_csv(os.path.join(config.path_datos_aprendizaje, "dataset-nulos.csv"))
+df.set_index("Unnamed: 0", inplace=True)
 def check_two_dates(date1, date2):
     # devuelve true si date2 está a exactamente 7 días de date1
     max_date = date1 + datetime.timedelta(days=7)
