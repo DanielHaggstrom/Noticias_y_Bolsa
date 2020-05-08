@@ -7,6 +7,7 @@ from statistics import mean
 from statistics import stdev
 import pandas
 from numpy import nan
+from sklearn.impute import KNNImputer
 
 # AHORA MISMO ESTÁ EN MODO DE REGRESIÓN
 
@@ -95,9 +96,12 @@ for file in os.listdir(config.path_datos_bolsa):
     df.set_index("Date", inplace=True)
     dataset_final = pandas.concat((dataset_final, df), axis=1)
 
-# existen nulls, imputaremos con la media
-dataset_final.fillna(dataset_final.mean(), inplace=True)
+# existen nulls, imputaremos los datos
 dataset_final.sort_index(inplace=True)
+cols = dataset_final.columns
+dates = dataset_final.index
+imputer = KNNImputer(n_neighbors=10, weights="uniform")
+dataset_final = pandas.DataFrame(imputer.fit_transform(dataset_final), index=dates, columns=cols)
 
 # finalmente, guardamos el dataframes a csv
 dataset_final.to_csv(os.path.join(config.path_datos_aprendizaje, "dataset.csv"), index=True, index_label="Date")
