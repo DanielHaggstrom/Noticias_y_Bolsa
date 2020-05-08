@@ -42,12 +42,14 @@ def generate_date_list(date1):
 dataset_final = pandas.DataFrame()
 
 for file in os.listdir(config.path_datos_bolsa):
+    if file == "FB.csv": # todo eliminar cuando solucionemos el problema
+        continue
     # primero buscamos entre los datos de noticias, para comprobar que podemos seguir
     if file not in os.listdir(config.path_datos_noticias_score):
         continue
     ticker = file[:-4]
     # adquirimos el dataframe con scores de noticias, y lo ajustamos a nuestras necesidades
-    news_data = pandas.read_csv(os.path.join(config.path_datos_noticias,file))
+    news_data = pandas.read_csv(os.path.join(config.path_datos_noticias_score, file))
     news_data.drop(["Unnamed: 0"], axis=1, inplace=True)
     raw_data = pandas.read_csv(os.path.join(config.path_datos_bolsa, file))
     # limpiamos un poco
@@ -74,6 +76,7 @@ for file in os.listdir(config.path_datos_bolsa):
             """
         # adquirimos los datos
         growth = get_growth(row["Open"], row["Close"])
+        #growth = row["Close"] - row["Open"]
         """
         if growth > 0:
             growth = 1
