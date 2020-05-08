@@ -76,6 +76,7 @@ for file in os.listdir(config.path_datos_bolsa):
             """
         # adquirimos los datos
         growth = get_growth(row["Open"], row["Close"])
+        #growth = row["Close"] - row["Open"]
         """
         if growth > 0:
             growth = 1
