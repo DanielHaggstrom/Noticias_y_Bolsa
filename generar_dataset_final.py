@@ -7,6 +7,8 @@ from statistics import mean
 from statistics import stdev
 import pandas
 from numpy import nan
+from sklearn.impute import KNNImputer
+
 
 # AHORA MISMO ESTÁ EN MODO DE REGRESIÓN
 
@@ -38,13 +40,12 @@ def generate_date_list(date1):
         aux.append(next_day)
     return [date.strftime("%Y-%m-%d") for date in aux]
 
+
 # creamos las rutas adecuadas para obtener datos y guardarlos
 # guardaremos todos los datos en un dataframe
 dataset_final = pandas.DataFrame()
 
 for file in os.listdir(config.path_datos_bolsa):
-    if file == "FB.csv": # todo eliminar cuando solucionemos el problema
-        continue
     # primero buscamos entre los datos de noticias, para comprobar que podemos seguir
     if file not in os.listdir(config.path_datos_noticias_score):
         continue
@@ -55,6 +56,8 @@ for file in os.listdir(config.path_datos_bolsa):
     raw_data = pandas.read_csv(os.path.join(config.path_datos_bolsa, file))
     # limpiamos un poco
     raw_data.set_index("Date", inplace=True)
+    if "2012-07-02" in raw_data.index:
+        input(ticker)
     raw_data.drop(["High", "Low", "Adj Close", "Volume"], axis=1, inplace=True)
     raw_data.sort_index(inplace=True)
     # creamos un dataframe vacío, donde guardaremos los datos de la empresa particular
@@ -82,7 +85,7 @@ for file in os.listdir(config.path_datos_bolsa):
             """
         # adquirimos los datos
         growth = get_growth(row["Open"], row["Close"])
-        #growth = row["Close"] - row["Open"]
+        # growth = row["Close"] - row["Open"]
         """
         if growth > 0:
             growth = 1
@@ -95,10 +98,13 @@ for file in os.listdir(config.path_datos_bolsa):
     df.set_index("Date", inplace=True)
     dataset_final = pandas.concat((dataset_final, df), axis=1)
 
-# existen nulls, imputaremos con la media
-dataset_final.fillna(dataset_final.mean(), inplace=True)
-dataset_final.sort_index(inplace=True)
+# existen nulls, imputaremos los datos
+cols = dataset_final.columns
+dates = dataset_final.index
+imputer = KNNImputer(n_neighbors=10, weights="uniform", copy=False)
+data_imputed = pandas.DataFrame(imputer.fit_transform(dataset_final), copy=False)
+dataset_final = pandas.DataFrame(data_imputed, index=dates, columns=cols)
 
 # finalmente, guardamos el dataframes a csv
 dataset_final.to_csv(os.path.join(config.path_datos_aprendizaje, "dataset.csv"), index=True, index_label="Date")
-print("Terminado")
+print("Terminado.")
