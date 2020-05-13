@@ -53,7 +53,7 @@ tickers = namesList
 
 for t in tickers:
     time.sleep(1)  # no queremos sobrecargar sus servidores
-    t = t.replace(".", "-")
+    t = t.replace(".", "-")  # todo comprobar que en otras partes del código tenemos esto en cuenta
     url = "https://query1.finance.yahoo.com/v7/finance/download/" + t + \
           "?period1=1325376000&period2=1588204800&interval=1wk&events=history"
     if os.path.exists(os.path.join(os.path.dirname(__file__), "datos", "bolsa", t + ".csv")):  # eliminamos si ya existe
@@ -65,6 +65,10 @@ for t in tickers:
         date = dataframe.index[0]
         if date == "2012-01-01":
             continue  # es correcto, y no hace falta seguir
+        # en caso contrario, lo eliminamos
+        print(t)
+        os.remove(os.path.join(os.path.dirname(__file__), "datos", "bolsa", t + ".csv"))
+        """
         # eliminamos el archivo, pues o es incorrecto, o la empresa no nos interesa
         os.remove(os.path.join(os.path.dirname(__file__), "datos", "bolsa", t + ".csv"))
         # todo una vez que tengamos un modelo funcional, probar con diferentes fechas cutoff
@@ -80,6 +84,8 @@ for t in tickers:
         url = "https://query1.finance.yahoo.com/v7/finance/download/" + t + \
               "?period1=" + str(period1) + "&period2=1588204800&interval=1wk&events=history"
         wget.download(url, out=os.path.join(os.path.dirname(__file__), "datos", "bolsa"))
+        """
 
     except HTTPError:
         print("No se pudo descargar " + t)
+print("Terminado.")

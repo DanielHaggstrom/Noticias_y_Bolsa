@@ -98,16 +98,13 @@ for file in os.listdir(config.path_datos_bolsa):
     df.set_index("Date", inplace=True)
     dataset_final = pandas.concat((dataset_final, df), axis=1)
 
-# guardamos el dataset antes de trabajar más con él
-dataset_final.sort_index(inplace=True)
-dataset_final.to_csv(os.path.join(config.path_datos_aprendizaje, "dataset-nulos.csv"))
-
 # existen nulls, imputaremos los datos
 cols = dataset_final.columns
 dates = dataset_final.index
-imputer = KNNImputer(n_neighbors=10, weights="uniform")
-dataset_final = pandas.DataFrame(imputer.fit_transform(dataset_final), index=dates, columns=cols)
+imputer = KNNImputer(n_neighbors=10, weights="uniform", copy=False)
+data_imputed = pandas.DataFrame(imputer.fit_transform(dataset_final), copy=False)
+dataset_final = pandas.DataFrame(data_imputed, index=dates, columns=cols)
 
 # finalmente, guardamos el dataframes a csv
 dataset_final.to_csv(os.path.join(config.path_datos_aprendizaje, "dataset.csv"), index=True, index_label="Date")
-print("Terminado")
+print("Terminado.")
