@@ -1,21 +1,7 @@
+import sys; print(sys.maxsize > 2**32)
 import pandas
 import os
-from sklearn.svm import SVR
-import matplotlib.pyplot as plt
-from statistics import mean
-from sklearn.metrics import r2_score
-from sklearn.metrics import explained_variance_score
-from sklearn.ensemble import RandomForestRegressor
-from sklearn.metrics import confusion_matrix
-from sklearn.metrics import accuracy_score
-from sklearn.ensemble import RandomForestClassifier
-from sklearn import preprocessing
-from sklearn.metrics import mean_squared_error
-from sklearn.neural_network import MLPRegressor
-from sklearn.multioutput import MultiOutputRegressor
-
-
-# AHORA ESTÁ EN MODO REGRESIÓN
+import keras
 
 # definimos una función útil para más adelante
 def make_time_steps(data, h, w, s, targets):
@@ -45,7 +31,6 @@ data.set_index("Date", inplace=True)
 
 # normalizamos los datos
 data = (data-data.mean())/data.std()
-print(data)
 
 # separamos en test y training
 training_data = data.loc["2012-01-01":"2018-12-31"]
@@ -68,15 +53,4 @@ x_train, y_train = make_time_steps(training_data, horizon, window, step, targets
 x_test, y_test = make_time_steps(testing_data, horizon, window, step, targets)
 
 # entrenamos y validamos el modelo
-reg = MLPRegressor(hidden_layer_sizes=(800, 800), max_iter=100000000)
-reg.fit(x_train, y_train)
-r2 = reg.score(x_test, y_test)
-print("MLP")
-print(mean_squared_error(reg.predict(x_test), y_test))
-
-"""
-svr = MultiOutputRegressor(SVR())
-svr.fit(x_train, y_train)
-r2 = svr.score(x_test, y_test)
-print("SVR")
-print(mean_squared_error(x_test, y_test))"""
+print(x_train)

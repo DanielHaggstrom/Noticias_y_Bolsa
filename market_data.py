@@ -4,7 +4,6 @@ import lxml.html as lh
 import pandas as pd
 import wget
 import os
-import datetime
 import time
 
 url = 'https://www.slickcharts.com/sp500'
