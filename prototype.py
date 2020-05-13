@@ -1,8 +1,8 @@
-import sys; print(sys.maxsize > 2**32)
-import pandas
 import os
+import pandas
 import keras
 
+print("--1")
 # definimos una función útil para más adelante
 def make_time_steps(data, h, w, s, targets):
     # nuestro target es todas las columnas que terminan en '-score'
@@ -28,9 +28,11 @@ def make_time_steps(data, h, w, s, targets):
 path = os.path.join(os.path.dirname(__file__), "datos", "aprendizaje", "dataset.csv")
 data = pandas.read_csv(path)
 data.set_index("Date", inplace=True)
+print("--2")
 
 # normalizamos los datos
 data = (data-data.mean())/data.std()
+print(data)
 
 # separamos en test y training
 training_data = data.loc["2012-01-01":"2018-12-31"]

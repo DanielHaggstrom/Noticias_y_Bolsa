@@ -7,7 +7,7 @@ from statistics import mean
 from statistics import stdev
 import pandas
 from numpy import nan
-from sklearn.impute import KNNImputer
+from fancyimpute import KNN
 
 
 # AHORA MISMO ESTÁ EN MODO DE REGRESIÓN
@@ -50,6 +50,7 @@ for file in os.listdir(config.path_datos_bolsa):
     if file not in os.listdir(config.path_datos_noticias_score):
         continue
     ticker = file[:-4]
+    print(ticker)
     # adquirimos el dataframe con scores de noticias, y lo ajustamos a nuestras necesidades
     news_data = pandas.read_csv(os.path.join(config.path_datos_noticias_score, file))
     news_data.drop(["Unnamed: 0"], axis=1, inplace=True)
@@ -101,9 +102,9 @@ for file in os.listdir(config.path_datos_bolsa):
 # existen nulls, imputaremos los datos
 cols = dataset_final.columns
 dates = dataset_final.index
-imputer = KNNImputer(n_neighbors=10, weights="uniform", copy=False)
-data_imputed = pandas.DataFrame(imputer.fit_transform(dataset_final), copy=False)
-dataset_final = pandas.DataFrame(data_imputed, index=dates, columns=cols)
+data_imputed = pandas.DataFrame(KNN(k=5).fit_transform(dataset_final), copy=False)
+data_imputed.columns = cols
+dataset_final = pandas.DataFrame(data_imputed, columns=cols)
 
 # finalmente, guardamos el dataframes a csv
 dataset_final.to_csv(os.path.join(config.path_datos_aprendizaje, "dataset.csv"), index=True, index_label="Date")
