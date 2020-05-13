@@ -1,4 +1,4 @@
-# nuestro objetivo es guardar copias de los datos de noticias, pero que contengan el score del análisis del sentimeinto
+# nuestro objetivo es guardar copias de los datos de noticias, pero que contengan el score del análisis del sentimiento
 # en vez del contenido de la noticia
 import config
 import os
@@ -12,7 +12,7 @@ sia = SIA()
 for file in os.listdir(config.path_datos_noticias):
     df = pandas.read_csv(os.path.join(config.path_datos_noticias, file), delimiter=";")
     ticker = df["Ticker"].iloc[0]
-    df["Date_Time"] = df["Date_Time"].str[:10] # eliminamos la hora, dejando sólo la fecha
+    df["Date_Time"] = df["Date_Time"].str[:10]  # eliminamos la hora, dejando sólo la fecha
     df["Score"] = 0
     # iteramos sobre las filas
     for index, row in df.iterrows():

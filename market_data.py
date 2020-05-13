@@ -4,11 +4,12 @@ import lxml.html as lh
 import pandas as pd
 import wget
 import os
+import datetime
+import time
 
 url = 'https://www.slickcharts.com/sp500'
 page = requests.get(url)
 doc = lh.fromstring(page.content)
-tr_elements = doc.xpath('//tr')
 tr_elements = doc.xpath('//tr')
 
 # Create empty list
@@ -51,10 +52,40 @@ tickers = namesList
 # todo comprobar que la lista de símbolos ticker del S&P 500 sea correcta
 
 for t in tickers:
-    t = t.replace(".", "-")
+    time.sleep(1)  # no queremos sobrecargar sus servidores
+    t = t.replace(".", "-")  # todo comprobar que en otras partes del código tenemos esto en cuenta
     url = "https://query1.finance.yahoo.com/v7/finance/download/" + t + \
           "?period1=1325376000&period2=1588204800&interval=1wk&events=history"
+    if os.path.exists(os.path.join(os.path.dirname(__file__), "datos", "bolsa", t + ".csv")):  # eliminamos si ya existe
+        os.remove(os.path.join(os.path.dirname(__file__), "datos", "bolsa", t + ".csv"))
     try:
         wget.download(url, out=os.path.join(os.path.dirname(__file__), "datos", "bolsa"))
+        # hemos descargado los datos, pero hay que comprobar que sean correctos (si la empresa existía en 2012-01-01)
+        dataframe = pd.read_csv(os.path.join(os.path.dirname(__file__), "datos", "bolsa", t + ".csv"), index_col="Date")
+        date = dataframe.index[0]
+        if date == "2012-01-01":
+            continue  # es correcto, y no hace falta seguir
+        # en caso contrario, lo eliminamos
+        print(t)
+        os.remove(os.path.join(os.path.dirname(__file__), "datos", "bolsa", t + ".csv"))
+        """
+        # eliminamos el archivo, pues o es incorrecto, o la empresa no nos interesa
+        os.remove(os.path.join(os.path.dirname(__file__), "datos", "bolsa", t + ".csv"))
+        # todo una vez que tengamos un modelo funcional, probar con diferentes fechas cutoff
+        if date > "2014-01-01":  # demasiados pocos datos, excluimos la empresa del análisis
+            print("Eliminada: " + t)
+            continue
+        day_of_week = datetime.datetime.strptime(date, "%Y-%m-%d").weekday()
+        days_to_next_sunday = 6 - day_of_week
+        next_sunday = datetime.datetime.strptime(date, "%Y-%m-%d") + datetime.timedelta(days=days_to_next_sunday)
+        input(next_sunday)
+        period1 = int(next_sunday.timestamp())
+        # volvemos a intentar el archivo, esta vez con la fecha modificada
+        url = "https://query1.finance.yahoo.com/v7/finance/download/" + t + \
+              "?period1=" + str(period1) + "&period2=1588204800&interval=1wk&events=history"
+        wget.download(url, out=os.path.join(os.path.dirname(__file__), "datos", "bolsa"))
+        """
+
     except HTTPError:
         print("No se pudo descargar " + t)
+print("Terminado.")
