@@ -7,7 +7,7 @@ from statistics import mean
 from statistics import stdev
 import pandas
 from numpy import nan
-from sklearn.impute import KNNImputer
+from fancyimpute import KNN
 
 
 # AHORA MISMO ESTÁ EN MODO DE REGRESIÓN
@@ -44,20 +44,18 @@ def generate_date_list(date1):
 # creamos las rutas adecuadas para obtener datos y guardarlos
 # guardaremos todos los datos en un dataframe
 dataset_final = pandas.DataFrame()
-
 for file in os.listdir(config.path_datos_bolsa):
     # primero buscamos entre los datos de noticias, para comprobar que podemos seguir
     if file not in os.listdir(config.path_datos_noticias_score):
         continue
     ticker = file[:-4]
+    print(ticker)
     # adquirimos el dataframe con scores de noticias, y lo ajustamos a nuestras necesidades
     news_data = pandas.read_csv(os.path.join(config.path_datos_noticias_score, file))
     news_data.drop(["Unnamed: 0"], axis=1, inplace=True)
     raw_data = pandas.read_csv(os.path.join(config.path_datos_bolsa, file))
     # limpiamos un poco
     raw_data.set_index("Date", inplace=True)
-    if "2012-07-02" in raw_data.index:
-        input(ticker)
     raw_data.drop(["High", "Low", "Adj Close", "Volume"], axis=1, inplace=True)
     raw_data.sort_index(inplace=True)
     # creamos un dataframe vacío, donde guardaremos los datos de la empresa particular
@@ -101,9 +99,11 @@ for file in os.listdir(config.path_datos_bolsa):
 # existen nulls, imputaremos los datos
 cols = dataset_final.columns
 dates = dataset_final.index
-imputer = KNNImputer(n_neighbors=10, weights="uniform", copy=False)
-data_imputed = pandas.DataFrame(imputer.fit_transform(dataset_final), copy=False)
-dataset_final = pandas.DataFrame(data_imputed, index=dates, columns=cols)
+data_imputed = pandas.DataFrame(KNN(k=5).fit_transform(dataset_final), copy=False)
+data_imputed.columns = cols
+dataset_final = pandas.DataFrame(data_imputed, columns=cols)
+dataset_final["Date"] = dates
+dataset_final.set_index("Date", inplace=True)
 
 # finalmente, guardamos el dataframes a csv
 dataset_final.to_csv(os.path.join(config.path_datos_aprendizaje, "dataset.csv"), index=True, index_label="Date")
