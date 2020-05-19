@@ -79,7 +79,7 @@ no_targets = list(set(data.columns).difference(targets))
 
 # entrenamos y validamos el modelo, iterando sobre los demás parámetros
 for lstm in range(1, 1000, 100):
-    for layer_num in range(1, 100):
+    for layer_num in range(1, 5):
         for window in range(2, 60, 6):
             # comprobamos si esta comprobación ya existe
             path = os.path.join(config.path_graph, "window " + str(window) + " lstm " + str(lstm) + " layer "

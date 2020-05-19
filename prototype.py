@@ -49,7 +49,7 @@ training_data = data.loc["2012-01-01":"2018-12-31"]
 testing_data = data.loc["2019-01-01":"2020-12-31"]
 
 # declaramos los parámetros que vamos a usar
-window = 2
+window = 20
 
 # obtenemos las columans target y no_target
 targets = []
@@ -64,11 +64,12 @@ x_test, y_test = split_sequences(testing_data, window, targets)
 
 # entrenamos y validamos el modelo
 model = Sequential()
-model.add(LSTM(2, input_shape=(window, x_train.shape[2], )))
+model.add(LSTM(20, input_shape=(window, x_train.shape[2], )))
+model.add(Dense(len(targets)))
 model.add(Dense(len(targets)))
 model.summary()
 model.compile(optimizer="adam", loss="mse")
-history = model.fit(x_train, y_train, epochs=20, batch_size=window, validation_data=(x_test, y_test), shuffle=False)
+history = model.fit(x_train, y_train, epochs=200, batch_size=window, validation_data=(x_test, y_test), shuffle=False)
 model.summary()
 pyplot.plot(history.history['loss'])
 pyplot.plot(history.history['val_loss'])
