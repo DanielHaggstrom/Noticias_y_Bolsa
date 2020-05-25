@@ -2,17 +2,17 @@ import os
 import pandas
 import config
 import numpy
+from keras.optimizers import Adam
 from keras.models import Sequential
-from keras.layers import LSTM, Dropout
+from keras.layers import LSTM, Dropout, BatchNormalization
 from keras.layers import Dense
 from matplotlib import pyplot
 from sklearn.preprocessing import MinMaxScaler
 
+
 # definimos una función útil para más adelante
-def split_sequences(data, n_steps, horizon, target_list):
-    # indicamos los números de columnas con datos a predecir
-    targets = numpy.array([data.columns.get_loc(c) for c in target_list])
-    no_targets = numpy.array([i for i in range(len(data.columns)) if i not in targets])
+def split_sequences(data, n_steps):
+    # vamos a realizar una predicción para el siguiente valor de todas las columnas
     # transformamos a un array de numpy
     sequences = data.to_numpy()
     x, y = list(), list()
@@ -20,11 +20,11 @@ def split_sequences(data, n_steps, horizon, target_list):
     for i in range(len(sequences)):
         # comprobamos si el final se pasa del tamaño del dataset
         end_ix = i + n_steps
-        if end_ix + horizon >= len(sequences):
+        if end_ix >= len(sequences):
             break
         # agrupamos el input y el output
         seq_x = sequences[i:end_ix, ]
-        seq_y = sequences[end_ix: end_ix + horizon, targets]
+        seq_y = sequences[end_ix, ]  # horizon=1 -> end_ix -1 + horizon
         x.append(seq_x)
         y.append(seq_y)
     return numpy.array(x), numpy.array(y)
@@ -43,36 +43,32 @@ data = pandas.DataFrame(scaled_data, columns=cols)
 data.set_index(indx, inplace=True)
 
 # separamos en test y training
-training_data = data.loc["2012-01-01":"2018-12-31"]
-testing_data = data.loc["2019-01-01":"2020-12-31"]
+sep = int(len(data) * 0.8)
+training_data = data.iloc[0:sep]
+testing_data = data.iloc[sep:]
 
 # declaramos los parámetros que vamos a usar
-window = 30
-horizonte = window
-
-# obtenemos las columans target y no_target
-targets = []
-for col in data.columns:
-    if "growth" in col:
-        targets.append(col)
-no_targets = list(set(data.columns).difference(targets))
+window = 24
 
 # obtenemos los time_steps
-x_train, y_train = split_sequences(training_data, window, horizonte, targets)
-x_test, y_test = split_sequences(testing_data, window, horizonte, targets)
+x_train, y_train = split_sequences(training_data, window)
+x_test, y_test = split_sequences(testing_data, window)
 
 # entrenamos y validamos el modelo
 model = Sequential()
-model.add(LSTM(200, input_shape=(window, x_train.shape[2], ), return_sequences=True))
-model.add(Dropout(0.8))
-model.add(Dense(len(targets)))
-model.add(Dropout(0.8))
-model.add(Dense(len(targets)))
-model.add(Dropout(0.8))
-model.add(Dense(len(targets)))
-model.compile(optimizer="adam", loss="mse")
+model.add(BatchNormalization(input_shape=(window, x_train.shape[2], )))
+model.add(LSTM(1000, return_sequences=True, activation="relu"))
+model.add(BatchNormalization())
+model.add(LSTM(1000, return_sequences=True, activation="relu"))
+model.add(BatchNormalization())
+model.add(LSTM(1000, return_sequences=True, activation="relu"))
+model.add(BatchNormalization())
+model.add(LSTM(1000, activation="relu"))
+model.add(BatchNormalization())
+model.add(Dense(x_train.shape[2]))
+model.compile(optimizer=Adam(lr=1e-2), loss="mse")
 model.summary()
-history = model.fit(x_train, y_train, epochs=50, batch_size=window, validation_data=(x_test, y_test))
+history = model.fit(x_train, y_train, epochs=200, batch_size=window*10, validation_data=(x_test, y_test), verbose= 2)
 pyplot.plot(history.history['loss'])
 pyplot.plot(history.history['val_loss'])
 pyplot.title('model train vs validation loss')
@@ -80,3 +76,21 @@ pyplot.ylabel('loss')
 pyplot.xlabel('epoch')
 pyplot.legend(['train', 'validation'], loc='upper right')
 pyplot.show()
+
+# evaluación contínua
+horizon = 10 #va a dar 5 predicciones
+
+# creamos la primera predicción
+data1 = x_test[0]
+pred = model.predict(data1.reshape(1, x_test[0].shape[0], x_test[0].shape[1]))
+data1 = numpy.delete(data1, 0, 0)
+data1 = numpy.vstack((data1, pred))
+
+# añadimos nuevas predicciones
+for i in range(horizon):
+    #input(data)
+    pred = model.predict(data1.reshape(1, x_test[0].shape[0], x_test[0].shape[1]))
+    data1 = numpy.delete(data1, 0, 0)
+    data1 = numpy.vstack((data1, pred))
+data1 = scaler.inverse_transform(data1)
+print(data1)

@@ -49,9 +49,11 @@ for file in os.listdir(config.path_datos_bolsa):
     if file not in os.listdir(config.path_datos_noticias_score):
         continue
     ticker = file[:-4]
-    print(ticker)
     # adquirimos el dataframe con scores de noticias, y lo ajustamos a nuestras necesidades
     news_data = pandas.read_csv(os.path.join(config.path_datos_noticias_score, file))
+    if len(news_data) < 300:
+        continue  # ignoramos empresas con pocas noticias
+    print(ticker)
     news_data.drop(["Unnamed: 0"], axis=1, inplace=True)
     raw_data = pandas.read_csv(os.path.join(config.path_datos_bolsa, file))
     # limpiamos un poco
