@@ -51,7 +51,7 @@ for file in os.listdir(config.path_datos_bolsa):
     ticker = file[:-4]
     # adquirimos el dataframe con scores de noticias, y lo ajustamos a nuestras necesidades
     news_data = pandas.read_csv(os.path.join(config.path_datos_noticias_score, file))
-    if len(news_data) < 300:
+    if len(news_data) < 400:
         continue  # ignoramos empresas con pocas noticias
     print(ticker)
     news_data.drop(["Unnamed: 0"], axis=1, inplace=True)
@@ -99,13 +99,8 @@ for file in os.listdir(config.path_datos_bolsa):
     dataset_final = pandas.concat((dataset_final, df), axis=1)
 
 # existen nulls, imputaremos los datos
-cols = dataset_final.columns
-dates = dataset_final.index
-data_imputed = pandas.DataFrame(KNN(k=5).fit_transform(dataset_final), copy=False)
-data_imputed.columns = cols
-dataset_final = pandas.DataFrame(data_imputed, columns=cols)
-dataset_final["Date"] = dates
-dataset_final.set_index("Date", inplace=True)
+dataset_final = dataset_final.interpolate(method="linear")
+dataset_final.fillna(value=0, inplace=True)
 
 # finalmente, guardamos el dataframes a csv
 dataset_final.to_csv(os.path.join(config.path_datos_aprendizaje, "dataset.csv"), index=True, index_label="Date")
