@@ -1,4 +1,5 @@
 import os
+import datetime
 import config
 import pandas
 import numpy
@@ -48,13 +49,18 @@ training_data = data.iloc[0:sep]
 testing_data = data.iloc[sep:]
 
 # declaramos los parámetros que vamos a usar
-window = 24
-horizon = 10
+window = 30
+horizon = 30
 
-targets = []
-for col in data.columns:
-    if "growth" in col:
-        targets.append(col)
+# en principio targets se refiere solo a las columnas con "-growth" en el nombre
+# sin embargo, dado que el modelo no funciona, y necesitamos datos para la interfaz
+# resulta más sencillo predecir todas las columnas a la hora de deshacer el scaler
+targets = data.columns
+
+#targets = []
+#for col in data.columns:
+#    if "growth" in col:
+#        targets.append(col)
 
 # obtenemos los time_steps
 x_train, y_train = split_sequences(training_data, window, horizon, targets)
@@ -67,14 +73,12 @@ model = Sequential()
 model.add(BatchNormalization(input_shape=(window, x_train.shape[2], )))
 model.add(LSTM(50, return_sequences=True, activation="relu"))
 model.add(BatchNormalization())
-model.add(LSTM(50, return_sequences=True, activation="relu"))
-model.add(BatchNormalization())
 model.add(LSTM(y_train.shape[2], activation="relu", return_sequences=True))
 model.add(BatchNormalization())
 model.add(Cropping1D((x_train.shape[1]-horizon, 0)))
 model.add(BatchNormalization())
 model.add(Dense(len(targets)))
-model.compile(optimizer=Adam(lr=1e-2), loss="mse")
+model.compile(optimizer=Adam(lr=1e-3), loss="mse")
 model.summary()
 history = model.fit(x_train, y_train, epochs=300, batch_size=window*10, validation_data=(x_test, y_test), verbose=2)
 pyplot.plot(history.history["loss"])
@@ -88,4 +92,36 @@ pyplot.show()
 # resultados de predicción
 data1 = x_test[0]
 pred = model.predict(data1.reshape(1, x_test[0].shape[0], x_test[0].shape[1]))
-print(pred)
+pred = pred.squeeze()
+
+# desnormalizamos
+pred = scaler.inverse_transform(pred)
+
+# transformamos en un DataFrame de Pandas
+pred = pandas.DataFrame(data=pred, columns=cols)
+
+
+# creamos el índice de las predicciones
+def generate_dates(date, horizon):
+    # dada una fecha, produce una lista de las siguentes fechas
+    transformed_date = datetime.datetime.strptime(date, "%Y-%m-%d")
+    time_delta = datetime.timedelta(days=7)
+    aux = [transformed_date + time_delta]
+    for i in range(horizon - 1):
+        next_date = aux[-1] + time_delta
+        aux.append(next_date)
+    return [date.strftime("%Y-%m-%d") for date in aux]
+
+
+next_index = generate_dates("2020-04-26", horizon)
+pred["Date"] = next_index
+pred.set_index("Date", inplace=True)
+keep = []
+for col in data.columns:
+    if "growth" in col:
+        keep.append(col)
+pred = pred[keep]
+
+# y guardamos
+path_pred = os.path.join(config.path_datos_aprendizaje, "pred.csv")
+pred.to_csv(path_pred, index=True, index_label="Date")
