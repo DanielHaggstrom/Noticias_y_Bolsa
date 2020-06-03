@@ -99,8 +99,8 @@ for file in os.listdir(config.path_datos_bolsa):
     dataset_final = pandas.concat((dataset_final, df), axis=1)
 
 # existen nulls, imputaremos los datos
-dataset_final = dataset_final.interpolate(method="linear")
-dataset_final.fillna(value=0, inplace=True)
+dataset_final.fillna(method="ffill", inplace=True)
+dataset_final.dropna(inplace=True)
 
 # finalmente, guardamos el dataframes a csv
 dataset_final.to_csv(os.path.join(config.path_datos_aprendizaje, "dataset.csv"), index=True, index_label="Date")
