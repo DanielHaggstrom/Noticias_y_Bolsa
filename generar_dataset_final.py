@@ -44,6 +44,8 @@ def generate_date_list(date1):
 # creamos las rutas adecuadas para obtener datos y guardarlos
 # guardaremos todos los datos en un dataframe
 dataset_final = pandas.DataFrame()
+# creamos un segundo dataframe que será útil más adelante
+close_values = pandas.DataFrame()
 for file in os.listdir(config.path_datos_bolsa):
     # primero buscamos entre los datos de noticias, para comprobar que podemos seguir
     if file not in os.listdir(config.path_datos_noticias_score):
@@ -62,6 +64,7 @@ for file in os.listdir(config.path_datos_bolsa):
     raw_data.sort_index(inplace=True)
     # creamos un dataframe vacío, donde guardaremos los datos de la empresa particular
     df = pandas.DataFrame(columns=["Date"])
+    df2 = pandas.DataFrame(columns=["Date"])
     # iteramos sobre las filas del dataframe raw_data
     for index, row in raw_data.iterrows():
         # buscamos las filas del dataframe de scores que se encuentren en la semana correspondiente a esta fila
@@ -94,9 +97,16 @@ for file in os.listdir(config.path_datos_bolsa):
         """
         df = df.append({"Date": index, ticker + "-growth": growth, ticker + "-score": score, ticker + "-num": score_num,
                         ticker + "-std": std}, ignore_index=True)
+        # añadimos los datos de open al segundo dataframe
+        df2 = df2.append({"Date": index, ticker: row["Close"]}, ignore_index=True)
     # guardamos los datos en el dataset final
     df.set_index("Date", inplace=True)
     dataset_final = pandas.concat((dataset_final, df), axis=1)
+    df2.set_index("Date", inplace=True)
+    close_values = pandas.concat((close_values, df2), axis=1)
+
+# guardamos el dataset de valores de cierre
+close_values.to_csv(os.path.join(config.path_datos_aprendizaje, "close.csv"), index=True, index_label="Date")
 
 # existen nulls, imputaremos los datos
 dataset_final.fillna(method="ffill", inplace=True)
