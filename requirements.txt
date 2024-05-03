@@ -56,7 +56,7 @@ tensorflow==2.11.1
 tensorflow-estimator==2.2.0
 termcolor==1.1.0
 threadpoolctl==2.0.0
-tqdm==4.46.0
+tqdm==4.66.3
 urllib3==1.26.5
 Werkzeug==2.2.3
 wget==3.2
