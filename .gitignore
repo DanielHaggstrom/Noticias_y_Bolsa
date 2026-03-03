@@ -1,4 +1,29 @@
-/Lib/
-/Scripts/
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+*/.venv/
+*/venv/
 pyvenv.cfg
-__pycache__/config.cpython-37.pyc
+
+# Python cache and build output
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.pytest_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+
+# Editors
+.idea/
+.vscode/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Local experiment artifacts
+listaUrls.pkl

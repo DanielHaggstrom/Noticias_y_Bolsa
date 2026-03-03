@@ -1,31 +1,68 @@
-# ProyectoBigData
-Repositorio para las asignaturas Proyecto Big Data II y III
+# Noticias y Bolsa
 
-El objetivo es predecir los valores de bolsa (índice S&P 500) partiendo del análisis de sentimiento en las noticias. Trabajamos con datos de granularidad semanal. Obtenemos los valores de bolsa de Yahoo Finance, y los datos de prensa de Finantial Times.
+Archived academic project for predicting weekly S&P 500 movements from Financial Times news sentiment.
 
-## Tareas por hacer
-- [x] Añadir más datos.
-- [x] Usar Keras en vez de Sklearn.
-- [x] Aumentar el número de features (número de noticias, desviación típica de sus puntuaciones).
-- [x] Extrapolar datos faltantes (o no).
-- [x] Probar una LSTM.
-- [x] Probar varios parámetros.
-- [ ] Mejorar el análisis de sentimiento.
+## Status
 
-## Dependencias
-Nuestro proyecto emplea las librerías indicadas en `requirements.txt`, notablemente `numpy`, `pandas`, `nltk`, `selenium` y `keras`. Estas librerías pueden instalarse mediante `pip install -r requirements.txt`, pero es necesario activar el virtual environment antes.
+This repository was archived on March 3, 2026.
 
-## Información general
-**config** continen variables útiles de rutas de directorios.
+- Active development has stopped.
+- The bundled Dash interface is kept in a deployable, read-only state.
+- The research pipeline remains in the repository for reference, but it should be treated as historical code rather than an actively maintained product.
 
-**get_names** construye, a partir de `datos/NASDAQ.txt` y `datos/NYSE.txt` un diccionario que asocia símbolos ticker con nombres de compañía. Este diccionario es guardado como un archivo json en `datos/tickers.json`.
+## What Is In The Repo
 
-**FT** extrae noticias del periódico *Finantial Times* relacionadas con las empresas del S&P 500, y genera una serie de archivos CSV con la fecha y el contenido de la noticia, agrupados por empresa: `datos/noticias/<nombre de empresa>.csv`.
+- `Interfaz/`: Dash application that serves bundled predictions and headline data.
+- `datos/`: historical market data, scraped news, sentiment scores, and the training dataset used in the project.
+- `FT.py`: legacy Financial Times scraping script.
+- `analizar_noticias.py`: sentiment scoring step for scraped articles.
+- `market_data.py`: Yahoo Finance weekly market data downloader.
+- `generar_dataset_final.py`: dataset builder that joins market and sentiment data.
+- `model.py`: legacy sequence-model training script.
 
-**analizar_noticias** copia los dataframes generados por `FT.py`, pero sustituyendo el contenido de las noticias por la puntuación del análisis de sentimiento. Los resultados se guardan en `datos/noticias - score/<ticker de empresa>.csv`.
+## Quick Start
 
-**market_data** obtiene los datos de bolsa de las empresas del S&P 500, agrupados semanalmente y por compañía. Los guarda en `datos/bolsa/<ticker de empresa>.csv`. Ignora algunas empresas que salieron a bolsa más tarde del 2012-01-01.
+The supported path for this archived repository is the bundled dashboard.
 
-**generar_dataset_final** a partir de los datos generados por `analizar_noticias.py` y `market_data.py` crea un dataset para alimentar el modelo de serie temporal. Este dataset tiene la fecha del lunes de cada semana, el crecimiento de las empresas en ese periodo, y la media de su puntuación de noticias. Se guarda en `datos/aprendizaje/dataset.csv`. Excluye empresas con pocas noticias, y el resto utiliza una extrapolación lineal, y aquellas que no sea posible extrapolar, imputa como 0.
+1. Create an environment with Python 3.10 or newer.
+2. Install the production dependencies:
 
-**model** con los datos finales de `generar_dataset_final.py`, particiona los datos para entrenar y testear un modelo de series temporales. Existe una versión en Google Colaboratory.
+```powershell
+py -3.10 -m venv .venv
+.venv\Scripts\Activate.ps1
+pip install -r requirements.txt
+```
+
+3. Run the dashboard locally:
+
+```powershell
+python Interfaz\app.py
+```
+
+4. For a production-style Windows deployment, run it through Waitress:
+
+```powershell
+waitress-serve --listen=127.0.0.1:8050 Interfaz.app:server
+```
+
+## Legacy Research Environment
+
+The original academic stack is preserved in `requirements-legacy-research.txt`.
+
+- It is not part of the production deployment path.
+- It is not guaranteed to reproduce the original training results on modern machines.
+- The scraping code depends on external sites that have likely changed since the project was created.
+
+## Notes On Historical Scripts
+
+- `FT.py` no longer contains credentials. Set `FT_EMAIL` and `FT_PASSWORD` in the environment before running it.
+- Financial Times scraping may require selector updates because the site structure has changed since the original work.
+- `analizar_noticias.py` expects the NLTK VADER lexicon and will download it automatically if missing.
+
+## Repository Cleanup
+
+This archive intentionally excludes committed virtual environments, IDE metadata, and Python bytecode artifacts. Those files were removed from version control to keep the repository maintainable and portable.
+
+## License
+
+MIT License. See `LICENSE`.

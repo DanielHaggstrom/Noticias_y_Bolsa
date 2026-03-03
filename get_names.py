@@ -1,33 +1,31 @@
-# este script busca crear un archivo json que asocia a cada símbolo ticker la empresa correspondiente
-import config
+"""Build a ticker-to-company-name lookup from the archived exchange exports."""
+
 import json
 import os
-import pandas
 
-# guardamos la ruta para obtener los datos (y luego guardar el resultado)
-# este método es independiente de la ubicación del repositorio y del sistema operativo
-path = config.path_datos
-nyse = pandas.read_csv(os.path.join(path, "NASDAQ.txt"))
-nasdaq = pandas.read_csv(os.path.join(path, "NYSE.txt"))
+import pandas as pd
 
-# añadimos los datos a un diccionario, evitando valores repetidos
-nyseSymbol = list(nyse["Symbol"])
-nyseDescription = list(nyse["Description"])
-nasdaqSymbol = list(nasdaq["Symbol"])
-nasdaqDescription = list(nasdaq["Description"])
+import config
 
-translation_dict = {}
 
-for i in range(0,len(nyseDescription)):
-    if nyseDescription[i] not in nasdaqDescription:
-        translation_dict.setdefault(nyseSymbol[i], nyseDescription[i])
+def main():
+    path = config.path_datos
+    nasdaq = pd.read_csv(os.path.join(path, "NASDAQ.txt"))
+    nyse = pd.read_csv(os.path.join(path, "NYSE.txt"))
 
-translation_dictDescription = list(translation_dict.values())
+    translation_dict = {}
 
-for i in range(0, len(nasdaqDescription)):
-    if nasdaqDescription[i] not in translation_dictDescription:
-        translation_dict.setdefault(nasdaqSymbol[i], nasdaqDescription[i])
+    for symbol, description in zip(nasdaq["Symbol"], nasdaq["Description"]):
+        translation_dict.setdefault(symbol, description)
 
-# guardamos el diccionario como json
-with open(os.path.join(path, "tickers.json"), "w") as fp:
-    json.dump(translation_dict, fp)
+    existing_descriptions = set(translation_dict.values())
+    for symbol, description in zip(nyse["Symbol"], nyse["Description"]):
+        if description not in existing_descriptions:
+            translation_dict.setdefault(symbol, description)
+
+    with open(os.path.join(path, "tickers.json"), "w", encoding="utf-8") as file_obj:
+        json.dump(translation_dict, file_obj, ensure_ascii=False, indent=2, sort_keys=True)
+
+
+if __name__ == "__main__":
+    main()

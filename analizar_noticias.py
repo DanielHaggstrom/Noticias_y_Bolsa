@@ -1,33 +1,48 @@
-# nuestro objetivo es guardar copias de los datos de noticias, pero que contengan el score del análisis del sentimiento
-# en vez del contenido de la noticia
-import config
+"""Generate sentiment score CSVs from the archived article dataset."""
+
 import os
-import pandas
+
+import nltk
+import pandas as pd
 from nltk.sentiment.vader import SentimentIntensityAnalyzer as SIA
 
-sia = SIA()
+import config
 
-# iteramos sobre la carpeta "noticias", donde se encuentran los dataframes csv que contienen las fechas y artículos
-# cada archivo es una empresa
-for file in os.listdir(config.path_datos_noticias):
-    df = pandas.read_csv(os.path.join(config.path_datos_noticias, file), delimiter=";")
-    ticker = df["Ticker"].iloc[0]
-    df["Date_Time"] = df["Date_Time"].str[:10]  # eliminamos la hora, dejando sólo la fecha
-    df["Score"] = 0
-    # iteramos sobre las filas
-    for index, row in df.iterrows():
-        titular = row["Titular"]
-        subtitular = row["Subtitular"]
-        texto = row["Texto"]
-        if not isinstance(titular, str):
-            titular = ""
-        if not isinstance(subtitular, str):
-            subtitular = ""
-        if not isinstance(texto, str):
-            texto = ""
-        articulo = titular + " " + subtitular + " " + texto
-        # obtenemos el puntaje del análisis de sentimiento
-        score = sia.polarity_scores(text=articulo)["compound"]
-        df.loc[index, "Score"] = score
-    # guardamos el resultado
-    df[["Date_Time", "Score"]].copy().to_csv(os.path.join(config.path_datos_noticias_score, ticker + ".csv"))
+
+def build_sentiment_analyzer():
+    try:
+        return SIA()
+    except LookupError:
+        nltk.download("vader_lexicon")
+        return SIA()
+
+
+def main():
+    sia = build_sentiment_analyzer()
+
+    for file_name in os.listdir(config.path_datos_noticias):
+        if not file_name.endswith(".csv"):
+            continue
+
+        dataframe = pd.read_csv(os.path.join(config.path_datos_noticias, file_name), delimiter=";")
+        dataframe = dataframe.loc[:, ~dataframe.columns.str.startswith("Unnamed:")]
+        if dataframe.empty:
+            continue
+
+        ticker = dataframe["Ticker"].iloc[0]
+        dataframe["Date_Time"] = dataframe["Date_Time"].astype(str).str[:10]
+        dataframe["Score"] = 0.0
+
+        for index, row in dataframe.iterrows():
+            titular = row["Titular"] if isinstance(row["Titular"], str) else ""
+            subtitular = row["Subtitular"] if isinstance(row["Subtitular"], str) else ""
+            texto = row["Texto"] if isinstance(row["Texto"], str) else ""
+            articulo = " ".join((titular, subtitular, texto)).strip()
+            dataframe.loc[index, "Score"] = sia.polarity_scores(text=articulo)["compound"]
+
+        output_path = os.path.join(config.path_datos_noticias_score, f"{ticker}.csv")
+        dataframe[["Date_Time", "Score"]].copy().to_csv(output_path, index=False)
+
+
+if __name__ == "__main__":
+    main()
